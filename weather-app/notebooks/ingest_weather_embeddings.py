@@ -25,8 +25,21 @@ import sys
 from pathlib import Path
 
 # Make `import lakebase` / `import embeddings` resolve from the repo root
-# regardless of the working directory (repo root = parent of notebooks/).
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# regardless of the working directory. Inside a Databricks notebook `__file__`
+# is not defined, so fall back to probing the current working directory (and
+# its parent) for the repo marker file.
+def _repo_root() -> Path:
+    try:
+        return Path(__file__).resolve().parent.parent
+    except NameError:
+        pass
+    for candidate in (Path(os.getcwd()), Path(os.getcwd()).parent):
+        if (candidate / "lakebase.py").exists():
+            return candidate
+    return Path(os.getcwd())
+
+
+sys.path.insert(0, str(_repo_root()))
 
 from psycopg2.extras import execute_values
 
