@@ -142,7 +142,7 @@
   </style>
 </head>
 <body>
-  <div style="font-size:13px; margin-bottom:16px;"><a href="/weather" style="color: var(--accent); text-decoration:none;">Weather search</a></div>
+  <div style="font-size:13px; margin-bottom:16px;"><a href="/" style="color: var(--accent); text-decoration:none;">Weather app</a></div>
   <h1>Stock Watchlist</h1>
   <p class="hint">Enter a single ticker symbol. This sends exactly ONE call to the Massive API to fetch the latest price, then adds it to your watchlist.</p>
 
@@ -178,7 +178,7 @@
 
     async function loadWatchlist() {
       try {
-        const resp = await fetch("/watchlist");
+        const resp = await fetch("/api/watchlist");
         const data = await resp.json();
         if (!resp.ok) {
           resultEl.textContent = "Error loading watchlist: " + (data.error || resp.statusText);
@@ -220,7 +220,7 @@
       resultEl.textContent = "Adding to watchlist...";
 
       try {
-        const resp = await fetch("/watchlist", {
+        const resp = await fetch("/api/watchlist", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ symbol }),
@@ -247,7 +247,7 @@
       resultEl.textContent = "Removing " + symbol + "...";
 
       try {
-        const resp = await fetch(`/watchlist/${encodeURIComponent(symbol)}`, {
+        const resp = await fetch(`/api/watchlist/${encodeURIComponent(symbol)}`, {
           method: "DELETE",
         });
         const data = await resp.json();
