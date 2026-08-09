@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather Intelligence</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card-bg: #ffffff;
+      --border: #e4e7ee;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --accent: #0f766e;
+      --accent-hover: #0b5d57;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
+      --danger: #dc2626;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      max-width: 760px;
+      margin: 48px auto;
+      padding: 0 20px;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    h2 { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .nav {
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .nav a { color: var(--accent); text-decoration: none; }
+    .nav a:hover { text-decoration: underline; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 24px;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+    }
+    label:first-child { margin-top: 0; }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.15s ease;
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    button {
+      margin-top: 18px;
+      padding: 10px 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.15s ease;
+    }
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #result {
+      margin-top: 16px;
+      white-space: pre-wrap;
+      background: #f6f6f6;
+      padding: 12px 14px;
+      border-radius: 8px;
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    #result:empty { display: none; }
+
+    .notice {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      background: var(--warn-bg);
+      border: 1px solid #fde68a;
+      color: var(--warn);
+    }
+
+    table {
+      width: 100%;
+      margin-top: 16px;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: top;
+    }
+    th {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-weight: 600;
+    }
+    tbody tr:hover { background: #fafbfe; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .empty-row td {
+      color: var(--muted);
+      text-align: center;
+      padding: 20px 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .badge-alert { background: #fee2e2; color: var(--danger); }
+    .badge-forecast { background: #ccfbf1; color: var(--accent-hover); }
+
+    .similarity {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .chunk {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav"><a href="/">Stock watchlist</a> &middot; <strong>Weather search</strong></div>
+  <h1>Weather Intelligence</h1>
+  <p class="hint">Harvest unstructured weather text from the NWS API into Lakebase, embed it with sentence-transformers, and search it semantically via pgvector.</p>
+
+  <div class="card">
+    <h2>1. Sync weather data</h2>
+    <p class="hint">Locations are semicolon-separated (e.g. <code>Chicago, IL; Austin, TX</code>). Leave empty to use the defaults.</p>
+    <form id="sync-form">
+      <label for="locations">Locations</label>
+      <input type="text" id="locations" name="locations" placeholder="Chicago, IL; Austin, TX">
+      <label for="limit">Max documents per location</label>
+      <input type="number" id="limit" name="limit" value="50" min="1" max="200">
+      <button type="submit" id="sync-btn">Sync from NWS</button>
+    </form>
+    <div id="sync-result"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Search weather documents</h2>
+    <p class="hint">Run the ingest job first so <code>weather_embeddings</code> has vectors &mdash; otherwise search returns no results.</p>
+    <form id="search-form">
+      <label for="query">Query</label>
+      <input type="text" id="query" name="query" placeholder="risk of flooding near rivers" required>
+      <label for="top_k">Number of results</label>
+      <input type="number" id="top_k" name="top_k" value="5" min="1" max="20">
+      <button type="submit" id="search-btn">Search</button>
+    </form>
+    <div id="search-notice" class="notice" style="display:none;"></div>
+    <div id="search-result"></div>
+  </div>
+
+  <script>
+    const syncForm = document.getElementById("sync-form");
+    const syncResult = document.getElementById("sync-result");
+    const syncBtn = document.getElementById("sync-btn");
+    const searchForm = document.getElementById("search-form");
+    const searchResult = document.getElementById("search-result");
+    const searchNotice = document.getElementById("search-notice");
+    const searchBtn = document.getElementById("search-btn");
+
+    function setNotice(text) {
+      searchNotice.style.display = text ? "block" : "none";
+      searchNotice.textContent = text;
+    }
+
+    syncForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const raw = document.getElementById("locations").value;
+      const locations = raw
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      const limit = parseInt(document.getElementById("limit").value, 10) || 50;
+
+      const body = { limit };
+      if (locations.length) body.locations = locations;
+
+      syncBtn.disabled = true;
+      syncResult.textContent = "Fetching weather data from NWS...";
+
+      try {
+        const resp = await fetch("/weather/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          syncResult.textContent = "Error: " + (data.error || resp.statusText);
+          return;
+        }
+        syncResult.textContent =
+          "Synced " + data.synced + " document(s) for " + (data.locations || []).join(", ") +
+          ". Next, run the ingest job to embed them, then search below.";
+      } catch (err) {
+        syncResult.textContent = "Request failed: " + err;
+      } finally {
+        syncBtn.disabled = false;
+      }
+    });
+
+    searchForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("query").value;
+      const top_k = parseInt(document.getElementById("top_k").value, 10) || 5;
+
+      searchBtn.disabled = true;
+      setNotice("");
+      searchResult.textContent = "Embedding query and searching...";
+
+      try {
+        const resp = await fetch("/weather/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, top_k }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          searchResult.textContent = "Error: " + (data.error || resp.statusText);
+          return;
+        }
+
+        if (data.message) {
+          setNotice(data.message);
+        }
+
+        const results = data.results || [];
+        if (!results.length) {
+          searchResult.innerHTML =
+            '<table><tbody><tr class="empty-row"><td>No matches. Try a different query, or run the ingest job first.</td></tr></tbody></table>';
+          return;
+        }
+
+        let rows = results.map((r) => {
+          const badge =
+            r.source_type === "alert"
+              ? '<span class="badge badge-alert">alert</span>'
+              : '<span class="badge badge-forecast">forecast</span>';
+          const chunk = (r.chunk_text || "").length > 400
+            ? r.chunk_text.slice(0, 400) + "…"
+            : r.chunk_text || "";
+          const sim = (Number(r.similarity) * 100).toFixed(1) + "%";
+          return `<tr>
+            <td class="similarity">${sim}</td>
+            <td>${r.location || "-"}<br>${badge}</td>
+            <td><strong>${r.headline || "-"}</strong><br><span class="chunk">${chunk}</span></td>
+          </tr>`;
+        }).join("");
+
+        searchResult.innerHTML = `<table>
+          <thead><tr><th>Similarity</th><th>Location</th><th>Match</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+      } catch (err) {
+        searchResult.textContent = "Request failed: " + err;
+      } finally {
+        searchBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

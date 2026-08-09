@@ -211,6 +211,12 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/weather")
+def weather_ui():
+    """UI to sync weather data from NWS and semantically search it."""
+    return render_template("weather.html")
+
+
 @app.route("/records")
 def list_records():
     """Read records already synced into Lakebase."""
