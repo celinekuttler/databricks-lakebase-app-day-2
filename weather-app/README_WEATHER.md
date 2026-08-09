@@ -97,11 +97,17 @@ Copy-Item .env.example .env   # then paste your LAKEBASE_URL into .env
 ### 1. Sync (harvest) — `POST /weather/sync`
 
 ```powershell
-python app.py
+python app.py   # Local: starts on http://localhost:8000
 ```
 
 ```bash
+# Local development:
 curl -X POST http://localhost:8000/weather/sync `
+  -H "Content-Type: application/json" `
+  -d '{"locations": ["Chicago, IL", "Austin, TX"], "limit": 50}'
+
+# Databricks deployment:
+curl -X POST https://<your-app-url>/weather/sync `
   -H "Content-Type: application/json" `
   -d '{"locations": ["Chicago, IL", "Austin, TX"], "limit": 50}'
 ```
@@ -122,7 +128,13 @@ python notebooks/ingest_weather_embeddings.py
 ### 3. Retrieve — `POST /weather/search`
 
 ```bash
+# Local development:
 curl -X POST http://localhost:8000/weather/search `
+  -H "Content-Type: application/json" `
+  -d '{"query": "risk of flooding near rivers", "top_k": 5}'
+
+# Databricks deployment:
+curl -X POST https://<your-app-url>/weather/search `
   -H "Content-Type: application/json" `
   -d '{"query": "risk of flooding near rivers", "top_k": 5}'
 ```

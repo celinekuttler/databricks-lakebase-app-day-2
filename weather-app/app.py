@@ -206,21 +206,10 @@ def handle_exception(err):
 
 
 @app.route("/")
-def index():
-    """Landing page: weather UI (sync from NWS + semantic search)."""
-    return render_template("weather.html")
-
-
 @app.route("/weather")
 def weather_ui():
-    """Weather UI (kept as an alias of / for backwards compatibility)."""
+    """UI to sync weather data from NWS and semantically search it."""
     return render_template("weather.html")
-
-
-@app.route("/watchlist")
-def watchlist_ui():
-    """Stock watchlist UI, kept behind a link on the weather page."""
-    return render_template("index.html")
 
 
 @app.route("/records")
@@ -417,7 +406,7 @@ def _upsert_weather_documents(documents: list[dict]) -> int:
     return count
 
 
-@app.route("/api/watchlist", methods=["GET"])
+@app.route("/watchlist", methods=["GET"])
 def get_watchlist():
     """Return the current user's watchlist symbols, with their last known price."""
     ensure_watchlist_table()
@@ -430,7 +419,7 @@ def get_watchlist():
     return jsonify(rows)
 
 
-@app.route("/api/watchlist", methods=["POST"])
+@app.route("/watchlist", methods=["POST"])
 def add_to_watchlist():
     """
     Fetch the latest price for a single stock symbol from Massive using
@@ -478,7 +467,7 @@ def add_to_watchlist():
     return jsonify({"symbol": symbol, "email": email, "latest_price": price})
 
 
-@app.route("/api/watchlist/<symbol>", methods=["DELETE"])
+@app.route("/watchlist/<symbol>", methods=["DELETE"])
 def delete_from_watchlist(symbol: str):
     """Remove a single symbol from the current user's watchlist."""
     ensure_watchlist_table()
