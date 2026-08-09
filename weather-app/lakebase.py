@@ -13,7 +13,6 @@ from contextlib import contextmanager
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from sqlalchemy import create_engine
 
 _SCOPE = os.environ.get("LAKEBASE_SECRET_SCOPE", "database")
 _KEY = os.environ.get("LAKEBASE_SECRET_KEY", "lakebase-url")
@@ -60,7 +59,13 @@ def get_connection():
 
 
 def get_engine():
-    """Return a SQLAlchemy engine for Lakebase."""
+    """Return a SQLAlchemy engine for Lakebase.
+
+    Imported lazily so modules that only use get_connection()/run_query()/
+    run_write() (e.g. the ingest notebook) don't need sqlalchemy installed.
+    """
+    from sqlalchemy import create_engine
+
     return create_engine(_lakebase_url())
 
 
