@@ -35,6 +35,13 @@ resources:
       tasks:
         - task_key: ingest_weather_embeddings
           job_cluster_key: default_cluster
+          libraries:
+            - pypi:
+                package: "databricks-sdk>=0.30.0"
+            - pypi:
+                package: "psycopg2-binary>=2.9.9"
+            - pypi:
+                package: "sentence-transformers>=3.0.0"
           notebook_task:
             notebook_path: ../notebooks/ingest_weather_embeddings.py
             base_parameters:
