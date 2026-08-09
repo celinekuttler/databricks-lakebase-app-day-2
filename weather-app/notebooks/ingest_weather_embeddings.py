@@ -41,6 +41,13 @@ def _repo_root() -> Path:
 
 sys.path.insert(0, str(_repo_root()))
 
+# Ensure sentence-transformers is installed (for interactive runs)
+try:
+    import sentence_transformers
+except ImportError:
+    import subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "sentence-transformers>=3.0.0"])
+
 from psycopg2.extras import execute_values
 
 import embeddings
