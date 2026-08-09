@@ -46,4 +46,4 @@ def to_vector_literal(embedding: list[float]) -> str:
     Format an embedding as a Postgres array literal string ('{v1,v2,...}') so it
     can be passed to psycopg2 and cast with `%s::vector` in SQL.
     """
-    return "{" + ",".join(repr(float(x)) for x in embedding) + "}"
+    return "[" + ",".join(repr(float(x)) for x in embedding) + "]"
