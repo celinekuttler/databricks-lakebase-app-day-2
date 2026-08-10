@@ -1,6 +1,6 @@
 # The Rise of the AI Data Engineer - Homework Day 2
 
-This repository contains my se ond homework project for  **[The Rise of the AI Data Engineer](https://learn.dataexpert.io/)** bootcamp by Zach Wilson in August 2026, focusing on AI data engineering on Databricks with Lakebase (Databricks-managed Postgres) and vector search.
+This repository contains my second homework project for  **[The Rise of the AI Data Engineer](https://learn.dataexpert.io/)** bootcamp by Zach Wilson in August 2026, focusing on AI data engineering on Databricks with Lakebase (Databricks-managed Postgres) and vector search.
 
 ## Project: Weather Intelligence — Unstructured Data → Lakebase Vector Search → REST API
 
